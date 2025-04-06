@@ -9,8 +9,21 @@ class ToDoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Group tasks by date
+ 
     Map<String, List<Map<String, String>>> groupedTasks = {};
+    final Map<String, Color> taskColors = {
+      'Laundry': Colors.blue.shade100,
+      'Dishwasher': Colors.orange.shade100,
+      'Iron Clothes': Colors.purple.shade100,
+      'Vacuum': Colors.brown.shade100,
+      'Charge EV': Colors.teal.shade100,
+      'Other': Colors.grey.shade300,
+    };
+
+    Color getTaskColor(String choreName) {
+      return taskColors[choreName] ?? taskColors['Other']!;
+    }
+
 
     for (var i = 0; i < todoList.length; i++) {
       final task = todoList[i];
@@ -55,6 +68,7 @@ class ToDoPage extends StatelessWidget {
                     '${DateFormat.Hm().format(start)} - ${DateFormat.Hm().format(end)}';
 
                 return Card(
+                  color: getTaskColor(task['chore']!),
                   child: ListTile(
                     title: Text('${task['chore']}'),
                     subtitle: Text(timeRange),
@@ -75,10 +89,10 @@ class ToDoPage extends StatelessWidget {
 
                         removeFromToDo(index);
                       },
-
                     ),
                   ),
                 );
+
               }).toList(),
             ],
           );
