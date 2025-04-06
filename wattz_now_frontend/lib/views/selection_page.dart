@@ -32,7 +32,7 @@ class _SelectionPageState extends State<SelectionPage> {
   ApiService apiService = ApiService();
 
   String formatDateTime(DateTime dt) {
-    return DateFormat('yyyy-MM-dd h a').format(dt);
+    return DateFormat('yyyy-MM-dd h:mm a').format(dt);
   }
 
   String formatFromApi(String dtString) {
