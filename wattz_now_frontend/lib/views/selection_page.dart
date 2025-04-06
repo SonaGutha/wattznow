@@ -308,11 +308,11 @@ class _SelectionPageState extends State<SelectionPage> {
                 decoration: InputDecoration(
                   labelText: 'Duration (hours)',
                   labelStyle: TextStyle(
-                    color: Colors.black, // Label text color
+                    color: Colors.black, 
                   ),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.black, // Default border color
+                      color: Colors.black, 
                     ),
                   ),
                   contentPadding: EdgeInsets.symmetric(
