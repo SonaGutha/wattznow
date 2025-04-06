@@ -16,49 +16,68 @@ class _SelectionPageState extends State<SelectionPage> {
 
   DateTime? startDateTime;
   DateTime? endDateTime;
-
-  String selectedChore = 'Washing Clothes';
+  String? selectedChore;
   bool isCustomChore = false;
 
   List<String> chores = [
-    'Washing Clothes',
+    'Laundry',
     'Dishwasher',
-    'Ironing',
-    'Vacuuming',
-    'Charging EV',
-    'Custom...',
+    'Iron Clothes',
+    'Vacuum',
+    'Charge EV',
+    'Other...',
   ];
 
   List<Map<String, dynamic>> timeSlots = [];
-  Map<String, dynamic>? bestTimeSlot;
-
   ApiService apiService = ApiService();
 
   String formatDateTime(DateTime dt) {
-    return DateFormat('yyyy-MM-dd h:mm a').format(dt);
+    return DateFormat('yyyy-MM-dd h a').format(dt);
+  }
+
+  String formatFromApi(String dtString) {
+    final dt = DateTime.parse(dtString);
+    return DateFormat('MMM d, y h a').format(dt);
   }
 
   Future<void> getTimeSlots() async {
     if (startDateTime == null || endDateTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please select both start and end date-times.")),
+        SnackBar(
+          content: Text("Please select both start and end date-times."),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+    if (!isCustomChore &&
+        (selectedChore == null || selectedChore!.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please select a task."),
+          duration: Duration(seconds: 1),
+        ),
       );
       return;
     }
 
     final now = DateTime.now();
     final maxAllowed = now.add(Duration(hours: 72));
-
     if (startDateTime!.isAfter(endDateTime!)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Start time must be before end time.")),
+        SnackBar(
+          content: Text("Start time must be before end time."),
+          duration: Duration(seconds: 1),
+        ),
       );
       return;
     }
-
     if (endDateTime!.isAfter(maxAllowed)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("End time must be within 72 hours from now.")),
+        SnackBar(
+          content: Text("End time must be within 72 hours from now."),
+          duration: Duration(seconds: 1),
+        ),
       );
       return;
     }
@@ -74,15 +93,26 @@ class _SelectionPageState extends State<SelectionPage> {
         duration,
       );
 
+      responseData.sort(
+        (a, b) => a['avg_direct_ci'].compareTo(b['avg_direct_ci']),
+      );
       setState(() {
         timeSlots = responseData;
-        bestTimeSlot = timeSlots.reduce(
-          (a, b) => a['avg_direct_ci'] < b['avg_direct_ci'] ? a : b,
-        );
       });
     } catch (e) {
       print("❌ Error: $e");
     }
+  }
+
+  Color getCardColor(int index) {
+    if (index == 0) return Colors.green.shade400;
+    if (index == 1) return Colors.lightGreen.shade300;
+    if (index == 2) return Colors.yellow.shade300;
+    return Colors.white;
+  }
+
+  Color getTextColor(int index) {
+    return index < 3 ? Colors.black : Colors.black87;
   }
 
   @override
@@ -114,6 +144,7 @@ class _SelectionPageState extends State<SelectionPage> {
                     vertical: 8,
                   ),
                 ),
+                hint: Text("Select a task"),
                 items:
                     chores
                         .map(
@@ -127,7 +158,7 @@ class _SelectionPageState extends State<SelectionPage> {
                   if (value != null) {
                     setState(() {
                       selectedChore = value;
-                      isCustomChore = value == 'Custom...';
+                      isCustomChore = value == 'Other...';
                     });
                   }
                 },
@@ -138,7 +169,7 @@ class _SelectionPageState extends State<SelectionPage> {
                 TextField(
                   controller: customChoreController,
                   decoration: InputDecoration(
-                    labelText: 'Enter your custom task',
+                    labelText: 'Other',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -152,7 +183,7 @@ class _SelectionPageState extends State<SelectionPage> {
 
               Row(
                 children: [
-                  Text("Start:"),
+                  Text("Start Time:"),
                   TextButton(
                     onPressed: () async {
                       DateTime now = DateTime.now();
@@ -191,7 +222,7 @@ class _SelectionPageState extends State<SelectionPage> {
 
               Row(
                 children: [
-                  Text("End:"),
+                  Text("End Time:"),
                   TextButton(
                     onPressed: () async {
                       DateTime now = DateTime.now();
@@ -228,6 +259,12 @@ class _SelectionPageState extends State<SelectionPage> {
                 ],
               ),
 
+              SizedBox(height: 24),
+              Text(
+                "Enter Duration",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
               TextField(
                 controller: windowController,
                 keyboardType: TextInputType.number,
@@ -243,36 +280,40 @@ class _SelectionPageState extends State<SelectionPage> {
                 child: Text('Get Time Slots'),
               ),
 
-              SizedBox(height: 20),
-              if (bestTimeSlot != null) ...[
+              if (timeSlots.isNotEmpty) ...[
+                SizedBox(height: 20),
                 Text(
-                  "Best time slot for ${isCustomChore ? customChoreController.text : selectedChore}:",
+                  "Top Energy Saving Hours",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
-                Text("Start: ${bestTimeSlot!['start']}"),
-                Text("End: ${bestTimeSlot!['end']}"),
-                Text("Carbon Intensity: ${bestTimeSlot!['avg_direct_ci']}"),
+                SizedBox(height: 8),
               ],
 
-              SizedBox(height: 20),
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: timeSlots.length,
                 itemBuilder: (context, index) {
                   final slot = timeSlots[index];
+                  final color = getCardColor(index);
+                  final textColor = getTextColor(index);
+
                   return Card(
+                    color: color,
                     child: ListTile(
-                      title: Text("Start: ${slot['start']}"),
-                      subtitle: Text("End: ${slot['end']}"),
-                      trailing: Text("CI: ${slot['avg_direct_ci']}"),
                       onTap: () async {
+                        final choreName =
+                            isCustomChore
+                                ? customChoreController.text
+                                : selectedChore;
+
                         bool? addToDo = await showDialog(
                           context: context,
                           builder:
                               (context) => AlertDialog(
                                 title: Text('Add to To-Do List?'),
                                 content: Text(
-                                  'Do you want to schedule ${isCustomChore ? customChoreController.text : selectedChore} at this time?',
+                                  'Do you want to schedule $choreName at this time?',
                                 ),
                                 actions: [
                                   TextButton(
@@ -291,10 +332,7 @@ class _SelectionPageState extends State<SelectionPage> {
 
                         if (addToDo == true) {
                           widget.addToDo({
-                            'chore':
-                                isCustomChore
-                                    ? customChoreController.text
-                                    : selectedChore,
+                            'chore': choreName!,
                             'start': slot['start'],
                             'end': slot['end'],
                           });
@@ -302,12 +340,36 @@ class _SelectionPageState extends State<SelectionPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                '${isCustomChore ? customChoreController.text : selectedChore} scheduled from ${slot['start']} to ${slot['end']}',
+                                '$choreName scheduled from ${formatFromApi(slot['start'])} to ${formatFromApi(slot['end'])}',
                               ),
+                              duration: Duration(seconds: 1),
                             ),
                           );
                         }
                       },
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "🕓 Start: ${formatFromApi(slot['start'])}",
+                            style: TextStyle(color: textColor, fontSize: 14),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "⏰ End:   ${formatFromApi(slot['end'])}",
+                            style: TextStyle(color: textColor, fontSize: 14),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "🔥 Carbon Intensity: ${slot['avg_direct_ci']} gCO₂eq/kWh",
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
