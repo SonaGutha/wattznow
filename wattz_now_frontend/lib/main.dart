@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.green,
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: Colors.yellow[50],
         appBarTheme: AppBarTheme(
           backgroundColor:Colors.green.shade800, 
           foregroundColor: Colors.white, 

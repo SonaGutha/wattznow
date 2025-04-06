@@ -12,7 +12,7 @@ class ToDoPage extends StatelessWidget {
     Map<String, List<Map<String, String>>> groupedTasks = {};
     final Map<String, Color> taskColors = {
       'Laundry': Colors.blue.shade100,
-      'Dishwasher': Colors.orange.shade100,
+      'Dishwasher': Colors.orange.shade200,
       'Iron Clothes': Colors.purple.shade100,
       'Vacuum': Colors.brown.shade100,
       'Charge EV': Colors.teal.shade100,
