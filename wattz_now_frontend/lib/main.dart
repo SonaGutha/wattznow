@@ -25,7 +25,26 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'WattzNow',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green),
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor:Colors.green.shade800, 
+          foregroundColor: Colors.white, 
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        tabBarTheme: TabBarTheme(
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicator: UnderlineTabIndicator(
+            borderSide: BorderSide(color: Colors.white, width: 2),
+          ),
+        ),
+      ),
       home: DefaultTabController(
         length: 2,
         child: Scaffold(
@@ -43,8 +62,27 @@ class _MyAppState extends State<MyApp> {
                 //Text('🔌', style: TextStyle(fontSize: 20)),
               ],
             ),
-            bottom: TabBar(
-              tabs: [Tab(text: "Select Task"), Tab(text: "To-Do List")],
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(48),
+              child: Container(
+                color: Colors.green.shade600,
+                child: TabBar(
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
+                  indicatorColor: Colors.white,
+                  tabs: [
+                    Tab(
+                      child: Text(
+                        "Select Task",
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    Tab(
+                      child: Text("To-Do List", style: TextStyle(fontSize: 14)),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           body: TabBarView(
