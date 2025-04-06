@@ -60,40 +60,44 @@ class ToDoPage extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-              ...tasks.map((task) {
-                DateTime start = DateTime.parse(task['start']!);
-                DateTime end = DateTime.parse(task['end']!);
+              ...(tasks..sort((a, b) {
+                    DateTime startA = DateTime.parse(a['start']!);
+                    DateTime startB = DateTime.parse(b['start']!);
+                    return startA.compareTo(startB);
+                  }))
+                  .map((task) {
+                    DateTime start = DateTime.parse(task['start']!);
+                    DateTime end = DateTime.parse(task['end']!);
 
-                String timeRange =
-                    '${DateFormat.Hm().format(start)} - ${DateFormat.Hm().format(end)}';
+                    String timeRange =
+                        '${DateFormat('h:mm a').format(start)} - ${DateFormat('h:mm a').format(end)}';
+                    return Card(
+                      color: getTaskColor(task['chore']!),
+                      child: ListTile(
+                        title: Text('${task['chore']}'),
+                        subtitle: Text(timeRange),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            final index = int.parse(task['index']!);
+                            final choreName = task['chore']!;
 
-                return Card(
-                  color: getTaskColor(task['chore']!),
-                  child: ListTile(
-                    title: Text('${task['chore']}'),
-                    subtitle: Text(timeRange),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        final index = int.parse(task['index']!);
-                        final choreName = task['chore']!;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '$choreName removed from your schedule',
+                                ),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '$choreName removed from your schedule',
-                            ),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
+                            removeFromToDo(index);
+                          },
+                        ),
+                      ),
+                    );
+                  })
 
-                        removeFromToDo(index);
-                      },
-                    ),
-                  ),
-                );
-
-              }).toList(),
             ],
           );
         },
