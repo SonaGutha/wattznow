@@ -12,8 +12,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final List<Map<String, String>> todoList = [];
 
-  void addToDo(Map<String, String> chore) {
-    setState(() => todoList.add(chore));
+  void addToDo(Map<String, String> task) {
+    setState(() => todoList.add(task));
   }
 
   void removeFromToDo(int index) {
@@ -29,10 +29,11 @@ class _MyAppState extends State<MyApp> {
       home: DefaultTabController(
         length: 2,
         child: Scaffold(
+          resizeToAvoidBottomInset: true,
           appBar: AppBar(
             title: Text("WattzNow"),
             bottom: TabBar(
-              tabs: [Tab(text: "Select Chore"), Tab(text: "To-Do List")],
+              tabs: [Tab(text: "Select Task"), Tab(text: "To-Do List")],
             ),
           ),
           body: TabBarView(

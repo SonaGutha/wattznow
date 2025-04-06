@@ -67,10 +67,6 @@ class _SelectionPageState extends State<SelectionPage> {
     String end = formatDateTime(endDateTime!);
     int duration = int.tryParse(windowController.text) ?? 1;
 
-    print('📅 Start Time: $start');
-    print('📅 End Time: $end');
-    print('⏳ Duration: $duration');
-
     try {
       List<Map<String, dynamic>> responseData = await apiService.getTimeSlots(
         start,
@@ -92,168 +88,175 @@ class _SelectionPageState extends State<SelectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Select Task',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ),
-            ),
-            DropdownButtonFormField<String>(
-              value: selectedChore,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(), 
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-              items:
-                  chores.map((chore) {
-                    return DropdownMenuItem(value: chore, child: Text(chore));
-                  }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedChore = value;
-                    isCustomChore = value == 'Custom...';
-                  });
-                }
-              },
-            ),
-
-            if (isCustomChore)
-              TextField(
-                controller: customChoreController,
-                decoration: InputDecoration(
-                  labelText: 'Enter your custom task',
-                ),
-              ),
-
-            SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Select Time Slot",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                Text("Start:"),
-                TextButton(
-                  onPressed: () async {
-                    DateTime now = DateTime.now();
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: now,
-                      firstDate: now,
-                      lastDate: now.add(Duration(hours: 72)),
-                    );
-                    if (pickedDate != null) {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (pickedTime != null) {
-                        setState(() {
-                          startDateTime = DateTime(
-                            pickedDate.year,
-                            pickedDate.month,
-                            pickedDate.day,
-                            pickedTime.hour,
-                            pickedTime.minute,
-                          );
-                        });
-                      }
-                    }
-                  },
-                  child: Text(
-                    startDateTime != null
-                        ? formatDateTime(startDateTime!)
-                        : 'Select',
-                  ),
-                ),
-              ],
-            ),
-
-            Row(
-              children: [
-                Text("End:"),
-                TextButton(
-                  onPressed: () async {
-                    DateTime now = DateTime.now();
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: startDateTime ?? now,
-                      firstDate: startDateTime ?? now,
-                      lastDate: now.add(Duration(hours: 72)),
-                    );
-                    if (pickedDate != null) {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (pickedTime != null) {
-                        setState(() {
-                          endDateTime = DateTime(
-                            pickedDate.year,
-                            pickedDate.month,
-                            pickedDate.day,
-                            pickedTime.hour,
-                            pickedTime.minute,
-                          );
-                        });
-                      }
-                    }
-                  },
-                  child: Text(
-                    endDateTime != null
-                        ? formatDateTime(endDateTime!)
-                        : 'Select',
-                  ),
-                ),
-              ],
-            ),
-
-            TextField(
-              controller: windowController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Duration (hours)'),
-            ),
-
-            SizedBox(height: 12),
-
-            ElevatedButton(
-              onPressed: getTimeSlots,
-              child: Text('Get Time Slots'),
-            ),
-
-            SizedBox(height: 20),
-
-            if (bestTimeSlot != null) ...[
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                "Best time slot for ${isCustomChore ? customChoreController.text : selectedChore}:",
+                "Select Task",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-              Text("Start: ${bestTimeSlot!['start']}"),
-              Text("End: ${bestTimeSlot!['end']}"),
-              Text("Carbon Intensity: ${bestTimeSlot!['avg_direct_ci']}"),
-            ],
+              SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: selectedChore,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+                items:
+                    chores
+                        .map(
+                          (chore) => DropdownMenuItem(
+                            value: chore,
+                            child: Text(chore),
+                          ),
+                        )
+                        .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedChore = value;
+                      isCustomChore = value == 'Custom...';
+                    });
+                  }
+                },
+              ),
 
-            SizedBox(height: 20),
+              if (isCustomChore) ...[
+                SizedBox(height: 12),
+                TextField(
+                  controller: customChoreController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter your custom task',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
 
-            Expanded(
-              child: ListView.builder(
+              SizedBox(height: 24),
+              Text(
+                "Select Time Slot",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+
+              Row(
+                children: [
+                  Text("Start:"),
+                  TextButton(
+                    onPressed: () async {
+                      DateTime now = DateTime.now();
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: now,
+                        firstDate: now,
+                        lastDate: now.add(Duration(hours: 72)),
+                      );
+                      if (pickedDate != null) {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (pickedTime != null) {
+                          setState(() {
+                            startDateTime = DateTime(
+                              pickedDate.year,
+                              pickedDate.month,
+                              pickedDate.day,
+                              pickedTime.hour,
+                              pickedTime.minute,
+                            );
+                          });
+                        }
+                      }
+                    },
+                    child: Text(
+                      startDateTime != null
+                          ? formatDateTime(startDateTime!)
+                          : 'Select',
+                    ),
+                  ),
+                ],
+              ),
+
+              Row(
+                children: [
+                  Text("End:"),
+                  TextButton(
+                    onPressed: () async {
+                      DateTime now = DateTime.now();
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: startDateTime ?? now,
+                        firstDate: startDateTime ?? now,
+                        lastDate: now.add(Duration(hours: 72)),
+                      );
+                      if (pickedDate != null) {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (pickedTime != null) {
+                          setState(() {
+                            endDateTime = DateTime(
+                              pickedDate.year,
+                              pickedDate.month,
+                              pickedDate.day,
+                              pickedTime.hour,
+                              pickedTime.minute,
+                            );
+                          });
+                        }
+                      }
+                    },
+                    child: Text(
+                      endDateTime != null
+                          ? formatDateTime(endDateTime!)
+                          : 'Select',
+                    ),
+                  ),
+                ],
+              ),
+
+              TextField(
+                controller: windowController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Duration (hours)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: getTimeSlots,
+                child: Text('Get Time Slots'),
+              ),
+
+              SizedBox(height: 20),
+              if (bestTimeSlot != null) ...[
+                Text(
+                  "Best time slot for ${isCustomChore ? customChoreController.text : selectedChore}:",
+                ),
+                Text("Start: ${bestTimeSlot!['start']}"),
+                Text("End: ${bestTimeSlot!['end']}"),
+                Text("Carbon Intensity: ${bestTimeSlot!['avg_direct_ci']}"),
+              ],
+
+              SizedBox(height: 20),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: timeSlots.length,
                 itemBuilder: (context, index) {
                   final slot = timeSlots[index];
@@ -309,8 +312,8 @@ class _SelectionPageState extends State<SelectionPage> {
                   );
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
