@@ -73,7 +73,7 @@ class _MyAppState extends State<MyApp> {
                   tabs: [
                     Tab(
                       child: Text(
-                        "Select Task",
+                        "Add Task",
                         style: TextStyle(fontSize: 14),
                       ),
                     ),
