@@ -54,31 +54,24 @@ def get_highest_cfe_window(target_date, start_hour=0, end_hour=23, window=1):
     start_idx = max(max_idx - window + 1, 0)
     return daily_df.loc[start_idx:max_idx]
 
-
-def get_lowest_direct_ci_window(start_date, end_date, start_time, end_time, window=1):
+def get_lowest_direct_ci_window(start_dt, end_dt, window=1):
     global df
 
-    # Ensure inputs are proper date/time objects
-    start_date = pd.to_datetime(start_date).date()
-    end_date = pd.to_datetime(end_date).date()
+    # Ensure full datetime conversion
+    start_dt = pd.to_datetime(start_dt)
+    end_dt = pd.to_datetime(end_dt)
 
-    # Filter rows by date range and time window
-    mask = (
-            (df[DATETIME].dt.date >= start_date) &
-            (df[DATETIME].dt.date <= end_date) &
-            (df[DATETIME].dt.time >= start_time) &
-            (df[DATETIME].dt.time < end_time)
-    )
-
-    daily_df = df.loc[mask].reset_index(drop=True)
+    # Filter using full datetime comparison
+    mask = (df[DATETIME] >= start_dt) & (df[DATETIME] < end_dt)
+    filtered_df = df.loc[mask].reset_index(drop=True)
 
     # Compute rolling average of direct CI
-    daily_df[DIRECT_CI_AVG] = daily_df[DIRECT_CI].rolling(window=window).mean()
+    filtered_df[DIRECT_CI_AVG] = filtered_df[DIRECT_CI].rolling(window=window).mean()
 
     # Collect suggestions
     suggestions = []
-    for i in range(window - 1, len(daily_df)):
-        window_df = daily_df.iloc[i - window + 1:i + 1]
+    for i in range(window - 1, len(filtered_df)):
+        window_df = filtered_df.iloc[i - window + 1:i + 1]
         avg_value = window_df[DIRECT_CI_AVG].mean()
         start_win = window_df.iloc[0][DATETIME]
         end_win = start_win + timedelta(hours=window)
