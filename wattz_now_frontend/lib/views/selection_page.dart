@@ -176,33 +176,59 @@ class _SelectionPageState extends State<SelectionPage> {
               ),
               SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: selectedChore,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
-                hint: Text("Select a task"),
-                items:
-                    chores
-                        .map(
-                          (chore) => DropdownMenuItem(
-                            value: chore,
-                            child: Text(chore),
-                          ),
-                        )
-                        .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      selectedChore = value;
-                      isCustomChore = value == 'Other...';
-                    });
-                  }
-                },
-              ),
+  value: selectedChore,
+  decoration: InputDecoration(
+    labelText: 'Task',
+    labelStyle: TextStyle(
+      fontWeight: FontWeight.bold,
+      color: Colors.green.shade800,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: Colors.green.shade800,
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: Colors.green.shade800,
+        width: 2,
+      ),
+    ),
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 14,
+    ),
+  ),
+  hint: Text(
+    "Select a task",
+    style: TextStyle(
+      fontSize: 14,
+      color: Colors.grey.shade600,
+    ),
+  ),
+  dropdownColor: Colors.white,
+  icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
+  style: TextStyle(
+    color: Colors.black87,
+    fontSize: 14,
+  ),
+  items: chores.map((chore) {
+    return DropdownMenuItem(
+      value: chore,
+      child: Text(chore),
+    );
+  }).toList(),
+  onChanged: (value) {
+    if (value != null) {
+      setState(() {
+        selectedChore = value;
+        isCustomChore = value == 'Other...';
+      });
+    }
+  },
+),
               if (isCustomChore) ...[
                 SizedBox(height: 12),
                 TextField(
@@ -308,11 +334,19 @@ class _SelectionPageState extends State<SelectionPage> {
                 decoration: InputDecoration(
                   labelText: 'Duration (hours)',
                   labelStyle: TextStyle(
-                    color: Colors.black, 
+                    color: Colors.green.shade800,
+                    fontSize: 14 
                   ),
                   border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.green.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.black, 
+                      color:
+                          Colors
+                              .green, // Border color when the field is focused
+                      width: 2,
                     ),
                   ),
                   contentPadding: EdgeInsets.symmetric(
@@ -320,6 +354,7 @@ class _SelectionPageState extends State<SelectionPage> {
                     vertical: 8,
                   ),
                 ),
+
               ),
               SizedBox(height: 12),
               Center(
