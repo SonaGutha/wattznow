@@ -14,9 +14,8 @@ class _SelectionPageState extends State<SelectionPage> {
   TextEditingController windowController = TextEditingController();
   TextEditingController customChoreController = TextEditingController();
 
-  DateTime selectedDate = DateTime.now();
-  TimeOfDay startTime = TimeOfDay(hour: 0, minute: 0);
-  TimeOfDay endTime = TimeOfDay(hour: 0, minute: 0);
+  DateTime? startDateTime;
+  DateTime? endDateTime;
 
   String selectedChore = 'Washing Clothes';
   bool isCustomChore = false;
@@ -35,30 +34,47 @@ class _SelectionPageState extends State<SelectionPage> {
 
   ApiService apiService = ApiService();
 
-  String formatTime(DateTime date, TimeOfDay time) {
-    final combined = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
-    );
-    return DateFormat('yyyy-MM-dd h:mm a').format(combined);
+  String formatDateTime(DateTime dt) {
+    return DateFormat('yyyy-MM-dd h:mm a').format(dt);
   }
 
   Future<void> getTimeSlots() async {
-    String startDateTime = formatTime(selectedDate, startTime);
-    String endDateTime = formatTime(selectedDate, endTime);
+    if (startDateTime == null || endDateTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please select both start and end date-times.")),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final maxAllowed = now.add(Duration(hours: 72));
+
+    if (startDateTime!.isAfter(endDateTime!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Start time must be before end time.")),
+      );
+      return;
+    }
+
+    if (endDateTime!.isAfter(maxAllowed)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("End time must be within 72 hours from now.")),
+      );
+      return;
+    }
+
+    String start = formatDateTime(startDateTime!);
+    String end = formatDateTime(endDateTime!);
     int duration = int.tryParse(windowController.text) ?? 1;
 
-    print('📅 Start Time: $startDateTime');
-    print('📅 End Time: $endDateTime');
+    print('📅 Start Time: $start');
+    print('📅 End Time: $end');
     print('⏳ Duration: $duration');
 
     try {
       List<Map<String, dynamic>> responseData = await apiService.getTimeSlots(
-        startDateTime,
-        endDateTime,
+        start,
+        end,
         duration,
       );
 
@@ -76,14 +92,29 @@ class _SelectionPageState extends State<SelectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Select Time Slot')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Select Task',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+            ),
             DropdownButtonFormField<String>(
               value: selectedChore,
-              decoration: InputDecoration(labelText: 'Select Task'),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(), 
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
               items:
                   chores.map((chore) {
                     return DropdownMenuItem(value: chore, child: Text(chore));
@@ -107,64 +138,91 @@ class _SelectionPageState extends State<SelectionPage> {
               ),
 
             SizedBox(height: 16),
-
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Select Time Slot",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
             Row(
               children: [
-                Text("Select Date:"),
+                Text("Start:"),
                 TextButton(
                   onPressed: () async {
-                    final selected = await showDatePicker(
+                    DateTime now = DateTime.now();
+                    DateTime? pickedDate = await showDatePicker(
                       context: context,
-                      initialDate: selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(Duration(days: 3)),
+                      initialDate: now,
+                      firstDate: now,
+                      lastDate: now.add(Duration(hours: 72)),
                     );
-                    if (selected != null) {
-                      setState(() {
-                        selectedDate = selected;
-                      });
+                    if (pickedDate != null) {
+                      TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (pickedTime != null) {
+                        setState(() {
+                          startDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+                        });
+                      }
                     }
                   },
-                  child: Text(DateFormat('yyyy-MM-dd').format(selectedDate)),
+                  child: Text(
+                    startDateTime != null
+                        ? formatDateTime(startDateTime!)
+                        : 'Select',
+                  ),
                 ),
               ],
             ),
 
             Row(
               children: [
-                Text("Start Time:"),
-                IconButton(
-                  icon: Icon(Icons.access_time),
+                Text("End:"),
+                TextButton(
                   onPressed: () async {
-                    final time = await showTimePicker(
+                    DateTime now = DateTime.now();
+                    DateTime? pickedDate = await showDatePicker(
                       context: context,
-                      initialTime: startTime,
+                      initialDate: startDateTime ?? now,
+                      firstDate: startDateTime ?? now,
+                      lastDate: now.add(Duration(hours: 72)),
                     );
-                    if (time != null) {
-                      setState(() => startTime = time);
+                    if (pickedDate != null) {
+                      TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (pickedTime != null) {
+                        setState(() {
+                          endDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+                        });
+                      }
                     }
                   },
+                  child: Text(
+                    endDateTime != null
+                        ? formatDateTime(endDateTime!)
+                        : 'Select',
+                  ),
                 ),
-                Text(startTime.format(context)),
-              ],
-            ),
-
-            Row(
-              children: [
-                Text("End Time:"),
-                IconButton(
-                  icon: Icon(Icons.access_time),
-                  onPressed: () async {
-                    final time = await showTimePicker(
-                      context: context,
-                      initialTime: endTime,
-                    );
-                    if (time != null) {
-                      setState(() => endTime = time);
-                    }
-                  },
-                ),
-                Text(endTime.format(context)),
               ],
             ),
 
@@ -237,6 +295,7 @@ class _SelectionPageState extends State<SelectionPage> {
                             'start': slot['start'],
                             'end': slot['end'],
                           });
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
