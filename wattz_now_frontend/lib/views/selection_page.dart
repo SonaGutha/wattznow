@@ -5,16 +5,21 @@ import '../services/api_service.dart';
 class SelectionPage extends StatefulWidget {
   final Function(Map<String, String>) addToDo;
   SelectionPage({required this.addToDo});
+
   @override
   _SelectionPageState createState() => _SelectionPageState();
 }
 
 class _SelectionPageState extends State<SelectionPage> {
   TextEditingController windowController = TextEditingController();
+  TextEditingController customChoreController = TextEditingController();
+
   DateTime selectedDate = DateTime.now();
   TimeOfDay startTime = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay endTime = TimeOfDay(hour: 0, minute: 0);
+
   String selectedChore = 'Washing Clothes';
+  bool isCustomChore = false;
 
   List<String> chores = [
     'Washing Clothes',
@@ -22,23 +27,33 @@ class _SelectionPageState extends State<SelectionPage> {
     'Ironing',
     'Vacuuming',
     'Charging EV',
-    'Custom...'
+    'Custom...',
   ];
-
-  TextEditingController customChoreController = TextEditingController();
-  bool isCustomChore = false;
 
   List<Map<String, dynamic>> timeSlots = [];
   Map<String, dynamic>? bestTimeSlot;
 
-  ApiService apiService = ApiService(); 
+  ApiService apiService = ApiService();
+
+  String formatTime(DateTime date, TimeOfDay time) {
+    final combined = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+    return DateFormat('yyyy-MM-dd h:mm a').format(combined);
+  }
 
   Future<void> getTimeSlots() async {
-    String startDate = DateFormat('yyyy-MM-dd').format(selectedDate);
-    String startDateTime = '$startDate ${startTime.format(context)}';
-    String endDateTime = '$startDate ${endTime.format(context)}';
-
+    String startDateTime = formatTime(selectedDate, startTime);
+    String endDateTime = formatTime(selectedDate, endTime);
     int duration = int.tryParse(windowController.text) ?? 1;
+
+    print('📅 Start Time: $startDateTime');
+    print('📅 End Time: $endDateTime');
+    print('⏳ Duration: $duration');
 
     try {
       List<Map<String, dynamic>> responseData = await apiService.getTimeSlots(
@@ -54,7 +69,7 @@ class _SelectionPageState extends State<SelectionPage> {
         );
       });
     } catch (e) {
-      print("Error: $e");
+      print("❌ Error: $e");
     }
   }
 
@@ -91,7 +106,7 @@ class _SelectionPageState extends State<SelectionPage> {
                 ),
               ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             Row(
               children: [
@@ -126,9 +141,7 @@ class _SelectionPageState extends State<SelectionPage> {
                       initialTime: startTime,
                     );
                     if (time != null) {
-                      setState(() {
-                        startTime = time;
-                      });
+                      setState(() => startTime = time);
                     }
                   },
                 ),
@@ -147,9 +160,7 @@ class _SelectionPageState extends State<SelectionPage> {
                       initialTime: endTime,
                     );
                     if (time != null) {
-                      setState(() {
-                        endTime = time;
-                      });
+                      setState(() => endTime = time);
                     }
                   },
                 ),
@@ -163,7 +174,7 @@ class _SelectionPageState extends State<SelectionPage> {
               decoration: InputDecoration(labelText: 'Duration (hours)'),
             ),
 
-            SizedBox(height: 10),
+            SizedBox(height: 12),
 
             ElevatedButton(
               onPressed: getTimeSlots,
@@ -171,8 +182,11 @@ class _SelectionPageState extends State<SelectionPage> {
             ),
 
             SizedBox(height: 20),
+
             if (bestTimeSlot != null) ...[
-              Text("Best time slot for $selectedChore:"),
+              Text(
+                "Best time slot for ${isCustomChore ? customChoreController.text : selectedChore}:",
+              ),
               Text("Start: ${bestTimeSlot!['start']}"),
               Text("End: ${bestTimeSlot!['end']}"),
               Text("Carbon Intensity: ${bestTimeSlot!['avg_direct_ci']}"),
@@ -197,7 +211,7 @@ class _SelectionPageState extends State<SelectionPage> {
                               (context) => AlertDialog(
                                 title: Text('Add to To-Do List?'),
                                 content: Text(
-                                  'Do you want to schedule $selectedChore at this time?',
+                                  'Do you want to schedule ${isCustomChore ? customChoreController.text : selectedChore} at this time?',
                                 ),
                                 actions: [
                                   TextButton(
@@ -226,7 +240,7 @@ class _SelectionPageState extends State<SelectionPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                '$selectedChore scheduled from ${slot['start']} to ${slot['end']}',
+                                '${isCustomChore ? customChoreController.text : selectedChore} scheduled from ${slot['start']} to ${slot['end']}',
                               ),
                             ),
                           );
