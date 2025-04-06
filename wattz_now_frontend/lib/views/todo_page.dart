@@ -72,6 +72,10 @@ class ToDoPage extends StatelessWidget {
                     String timeRange =
                         '${DateFormat('h:mm a').format(start)} - ${DateFormat('h:mm a').format(end)}';
                     return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       color: getTaskColor(task['chore']!),
                       child: ListTile(
                         title: Text('${task['chore']}'),

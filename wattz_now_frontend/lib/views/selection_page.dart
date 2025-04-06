@@ -275,10 +275,18 @@ class _SelectionPageState extends State<SelectionPage> {
               ),
 
               SizedBox(height: 12),
-              ElevatedButton(
+              Center(
+                child:ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 184, 233, 184),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
                 onPressed: getTimeSlots,
-                child: Text('Get Time Slots'),
-              ),
+                child: Text('Get Time Slots', style: TextStyle(fontSize: 14, color: Colors.black)),
+              ),),
 
               if (timeSlots.isNotEmpty) ...[
                 SizedBox(height: 20),
@@ -299,8 +307,16 @@ class _SelectionPageState extends State<SelectionPage> {
                   final textColor = getTextColor(index);
 
                   return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     color: color,
+                    elevation: 3,
                     child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       onTap: () async {
                         final choreName =
                             isCustomChore
@@ -354,18 +370,17 @@ class _SelectionPageState extends State<SelectionPage> {
                             "🕓 Start: ${formatFromApi(slot['start'])}",
                             style: TextStyle(color: textColor, fontSize: 14),
                           ),
-                          SizedBox(height: 4),
                           Text(
                             "⏰ End:   ${formatFromApi(slot['end'])}",
                             style: TextStyle(color: textColor, fontSize: 14),
                           ),
                           SizedBox(height: 8),
                           Text(
-                            "🔥 Carbon Intensity: ${slot['avg_direct_ci']} gCO₂eq/kWh",
+                            "🔥 CI: ${slot['avg_direct_ci']} gCO₂eq/kWh",
                             style: TextStyle(
                               color: textColor,
-                              fontSize: 14,
                               fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
                           ),
                         ],
@@ -374,6 +389,7 @@ class _SelectionPageState extends State<SelectionPage> {
                   );
                 },
               ),
+
             ],
           ),
         ),
