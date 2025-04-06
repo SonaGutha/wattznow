@@ -115,6 +115,46 @@ class _SelectionPageState extends State<SelectionPage> {
     return index < 3 ? Colors.black : Colors.black87;
   }
 
+  Future<DateTime?> pickDate(BuildContext context, DateTime initialDate) {
+    return showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(hours: 72)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.green.shade800,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+  }
+
+  Future<TimeOfDay?> pickTime(BuildContext context) {
+    return showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.green.shade800,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,7 +203,6 @@ class _SelectionPageState extends State<SelectionPage> {
                   }
                 },
               ),
-
               if (isCustomChore) ...[
                 SizedBox(height: 12),
                 TextField(
@@ -171,33 +210,28 @@ class _SelectionPageState extends State<SelectionPage> {
                   decoration: InputDecoration(
                     labelText: 'Other',
                     border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               ],
-
               SizedBox(height: 24),
               Text(
                 "Select Time Slot",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-
+              SizedBox(height: 12),
               Row(
                 children: [
                   Text("Start Time:"),
                   TextButton(
                     onPressed: () async {
                       DateTime now = DateTime.now();
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: now,
-                        firstDate: now,
-                        lastDate: now.add(Duration(hours: 72)),
-                      );
+                      DateTime? pickedDate = await pickDate(context, now);
                       if (pickedDate != null) {
-                        TimeOfDay? pickedTime = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        );
+                        TimeOfDay? pickedTime = await pickTime(context);
                         if (pickedTime != null) {
                           setState(() {
                             startDateTime = DateTime(
@@ -215,28 +249,27 @@ class _SelectionPageState extends State<SelectionPage> {
                       startDateTime != null
                           ? formatDateTime(startDateTime!)
                           : 'Select',
+                          style: TextStyle(
+                        color:
+                            Colors.blue.shade700, // This changes "Select" color
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
-
               Row(
                 children: [
                   Text("End Time:"),
                   TextButton(
                     onPressed: () async {
                       DateTime now = DateTime.now();
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: startDateTime ?? now,
-                        firstDate: startDateTime ?? now,
-                        lastDate: now.add(Duration(hours: 72)),
+                      DateTime? pickedDate = await pickDate(
+                        context,
+                        startDateTime ?? now,
                       );
                       if (pickedDate != null) {
-                        TimeOfDay? pickedTime = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        );
+                        TimeOfDay? pickedTime = await pickTime(context);
                         if (pickedTime != null) {
                           setState(() {
                             endDateTime = DateTime(
@@ -254,11 +287,15 @@ class _SelectionPageState extends State<SelectionPage> {
                       endDateTime != null
                           ? formatDateTime(endDateTime!)
                           : 'Select',
+                          style: TextStyle(
+                        color:
+                            Colors.blue.shade700, // This changes "Select" color
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
-
               SizedBox(height: 24),
               Text(
                 "Enter Duration",
@@ -270,28 +307,37 @@ class _SelectionPageState extends State<SelectionPage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: 'Duration (hours)',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(
+                    color: Colors.black, // Label text color
+                  ),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.black, // Default border color
+                    ),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
-                  ), // Match with dropdown
+                  ),
                 ),
               ),
-
               SizedBox(height: 12),
               Center(
-                child:ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 184, 233, 184),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 184, 233, 184),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  onPressed: getTimeSlots,
+                  child: Text(
+                    'Get Time Slots',
+                    style: TextStyle(fontSize: 14, color: Colors.black),
+                  ),
                 ),
-                onPressed: getTimeSlots,
-                child: Text('Get Time Slots', style: TextStyle(fontSize: 14, color: Colors.black)),
-              ),),
-
+              ),
               if (timeSlots.isNotEmpty) ...[
                 SizedBox(height: 20),
                 Text(
@@ -300,7 +346,6 @@ class _SelectionPageState extends State<SelectionPage> {
                 ),
                 SizedBox(height: 8),
               ],
-
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -393,7 +438,6 @@ class _SelectionPageState extends State<SelectionPage> {
                   );
                 },
               ),
-
             ],
           ),
         ),
