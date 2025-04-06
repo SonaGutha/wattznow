@@ -277,7 +277,7 @@ class _SelectionPageState extends State<SelectionPage> {
                           : 'Select',
                           style: TextStyle(
                         color:
-                            Colors.blue.shade700, // This changes "Select" color
+                            Colors.blue.shade700, 
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -315,7 +315,7 @@ class _SelectionPageState extends State<SelectionPage> {
                           : 'Select',
                           style: TextStyle(
                         color:
-                            Colors.blue.shade700, // This changes "Select" color
+                            Colors.blue.shade700, 
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -345,7 +345,7 @@ class _SelectionPageState extends State<SelectionPage> {
                     borderSide: BorderSide(
                       color:
                           Colors
-                              .green, // Border color when the field is focused
+                              .green, 
                       width: 2,
                     ),
                   ),
