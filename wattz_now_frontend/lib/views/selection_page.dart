@@ -271,6 +271,10 @@ class _SelectionPageState extends State<SelectionPage> {
                 decoration: InputDecoration(
                   labelText: 'Duration (hours)',
                   border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ), // Match with dropdown
                 ),
               ),
 
