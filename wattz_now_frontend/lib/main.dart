@@ -31,7 +31,18 @@ class _MyAppState extends State<MyApp> {
         child: Scaffold(
           resizeToAvoidBottomInset: true,
           appBar: AppBar(
-            title: Text("WattzNow"),
+            title: Row(
+              children: [
+                Image.asset('assets/scarlethacks.png', height: 28),
+                SizedBox(width: 10),
+                Text(
+                  'WattzNow',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(width: 6),
+                //Text('🔌', style: TextStyle(fontSize: 20)),
+              ],
+            ),
             bottom: TabBar(
               tabs: [Tab(text: "Select Task"), Tab(text: "To-Do List")],
             ),
